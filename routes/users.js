@@ -12,9 +12,10 @@ const verify = require("../middleware/verify");
 
 
 const schema = Joi.object({
-  username: Joi.string().alphanum().min(3).max(30).required(),
-  email: Joi.string().email().required(),
-  age: Joi.number().integer().min(18).max(100),
+  name: Joi.string().alphanum().min(3).max(30).required(),
+  username: Joi.string().email().required(),
+  password: Joi.string().min(7).max(115),
+  role:Joi.string()
 });
 
 /* GET users listing. */
