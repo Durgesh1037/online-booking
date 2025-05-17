@@ -1,4 +1,4 @@
-This online platform facilitates trip bookings. Its backend APIs are built using Node.js, Express.js, and MongoDB.
+This online platform facilitates trips/bus ticket bookings. Its backend APIs are built using Node.js, Express.js, and MongoDB.
 
 Authentication and authorization are implemented using the Joi and JWT npm packages.
 
