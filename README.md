@@ -18,9 +18,11 @@ Remaining features will be introduce soon
 
 The backend application is running on port 9000 and can be accessed at http://localhost:9000.
 
+Checkout the public repo :- https://github.com/Durgesh1037/online-booking
+
 Instructions to run the application:
 
-1. Clone the repository.
+1. Clone the repository :- https://github.com/Durgesh1037/online-booking.git
 2. Navigate to the backend directory using cd backend.
 3. Open a terminal and run npm install to install dependencies.
 4. Create a database named onlinebooking in your local MongoDB environment.
