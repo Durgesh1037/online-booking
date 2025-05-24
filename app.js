@@ -55,12 +55,13 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 app.get("/",(req,res)=>{
   try{
-    res.send("Welcome to the home page");
+    res.send("Welcome to the home page.");
   }
   catch(err){
     console.log(err);
   }
 });
+
 
 app.use('/auth', usersRouter);
 app.use("/admin",adminRouter);
