@@ -6,11 +6,11 @@ const bookingSchema=new mongoose.Schema({
     },
     userId:{
         type:String,
-        required:[true,"name should be required."]
+        required:[true,"userId should be required."]
     },
     tripId:{
         type:String,
-        required:[true,"name should be required."]
+        required:[true,"tripId should be required."]
     },
     to:{
         type:String,

@@ -1,40 +1,48 @@
 var express = require("express");
 var router = express.Router();
-
 const verify = require("../middleware/verify");
-
 const Booking = require("../models/booking.model");
-
+const schemaValidate = require("../middleware/schema-validate");
+const schemas = require("../helper/schemas");
 const { ObjectId } = require("mongodb");
+const QRCode=require("qrcode")
 
-router.post("/", verify, async function (req, res, next) {
-  try {
-    const username = req.userId;
-    const { tripId, status, seatNumber, bookingDateTime, to, from } = req.body;
-    const createBooking = new Booking({
-      userId: username,
-      tripId,
-      status,
-      seatNumber,
-      bookingDateTime,
-      to,
-      from,
-    });
-    await createBooking.save();
-    return res.status(200).status({
-      message: "user booking created",
-      status: true,
-    });
-  } catch (err) {
-    console.log("error", err);
-    res.status(500).send({ message: "something went wrong", status: false });
+router.post(
+  "/",
+  verify,
+  schemaValidate(schemas.bookingPost),
+  async function (req, res) {
+    try {
+      const username = req.userId;
+      console.log("username",username);
+      const { tripId, status, seatNumber, bookingDateTime, to, from,tripName } =
+        req.body;
+      const createBooking = new Booking({
+        userId: username,
+        tripId,
+        status,
+        seatNumber,
+        bookingDateTime,
+        to,
+        from,
+        name:tripName
+      });
+      await createBooking.save();
+      return res.status(200).send({
+        message: "user booking created",
+        status: true,
+      });
+    } catch (err) {
+      console.log("error", err);
+      res.status(500).send({ message: "something went wrong", status: false });
+    }
   }
-});
+);
 router.get("/", verify, async function (req, res, next) {
   try {
     const username = req.userId;
-    const allBookings = await Booking.find({ username });
-    return res.status(200).status({
+    const allBookings = await Booking.find({ userId:username });
+    return res.status(200).send({
       message: "all bookings fetched",
       bookings: allBookings,
       status: true,
@@ -48,12 +56,13 @@ router.get("/", verify, async function (req, res, next) {
 router.get("/:id", verify, async function (req, res, next) {
   try {
     const username = req.userId;
+    const {id}=req.params;
     const bookingDetails = await Booking.find({
-      username,
+      userId:username,
       _id: new ObjectId(id),
     });
-    return res.status(200).status({
-      message: "all bookings fetched",
+    return res.status(200).send({
+      message: "specific booking details successfully fetched",
       bookings: bookingDetails,
       status: true,
     });
@@ -66,6 +75,7 @@ router.get("/:id", verify, async function (req, res, next) {
 router.delete("/:id", verify, async function (req, res, next) {
   try {
     const username = req.userId;
+    const id=req.params;
     const bookingDetails = await Booking.find({
       username,
       _id: new ObjectId(id),
@@ -74,12 +84,12 @@ router.delete("/:id", verify, async function (req, res, next) {
     const currentDateTime = Date.now();
     if (date < currentDateTime) {
       const bookingDeleted = await Booking.deleteOne({ _id: new ObjectId(id) });
-      return res.status(200).status({
+      return res.status(200).send({
         message: "your booking deleted",
         status: true,
       });
     }
-    return res.status(200).status({
+    return res.status(200).send({
       message:
         "unable to delete booking at this moment , you can delete booking within 24 hrs",
       status: true,
@@ -92,39 +102,39 @@ router.delete("/:id", verify, async function (req, res, next) {
 
 //
 // With generate qrcode
-const generateQR = async text => {
-    try {
-      console.log(await QRCode.toDataURL(text))
-    } catch (err) {
-      console.error(err)
-    }
+const generateQR = async (textData) => {
+  try {
+    // console.log(await QRCode.toDataURL(text));
+    const text=await QRCode.toDataURL(textData);
+    return text;
+  } catch (err) {
+    console.error(err);
   }
+};
 
-router.get("/:id/ticket", verify, async function (req, res, next) {
+router.get("/:id/ticket",verify, async function (req, res, next) {
   try {
     const username = req.userId;
+    const {id}=req.params;
     const ticketDetails = await Booking.find({
-      username,
+      userId:username,
       _id: new ObjectId(id),
     });
 
-    generateQR();
-    return res.status(200).status({
-      message: "your booking ticket details fetched",
-      ticketDetails,
-      status: true,
-    });
+    console.log(ticketDetails);
+
+    const result=await generateQR(ticketDetails);
+    return res.send(`
+      <p>QR Code for: <strong>data</strong></p>
+      <img src="${result}">
+      <br><a href="/">Generate another</a>
+    `);
+    return res.render('qrcode',{text:result})
   } catch (err) {
     console.log("error", err);
     res.status(500).send({ message: "something went wrong", status: false });
   }
 });
-
-
-
-
-
-
 
 module.exports = router;
 

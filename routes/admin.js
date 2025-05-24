@@ -2,40 +2,50 @@ var express = require("express");
 var router = express.Router();
 const Trip = require("../models/trip.model");
 const Booking = require("../models/booking.model");
-
+const schemaValidate = require("../middleware/schema-validate");
+const schemas = require("../helper/schemas");
 const { ObjectId } = require("mongodb");
+const User = require("../models/user.model");
 
-router.post("/trips", async function (req, res) {
-  const { tripName, to, from, seats, price } = req.body;
-  try {
-    const tripData = new Trip({ name: tripName, to, from, seats, price });
-    const result = await tripData.save();
-    res
-      .status(200)
-      .send({ message: "trip successfully created", status: true });
-  } catch (err) {
-    console.log("err", err);
-    res.status(500).send({ message: "something went wrong", status: false });
+router.post(
+  "/trips",
+  schemaValidate(schemas.tripPOST),
+  async function (req, res) {
+    const { tripName, to, from, seats, price } = req.body;
+    try {
+      const tripData = new Trip({ name: tripName, to, from, seats, price });
+      const result = await tripData.save();
+      res
+        .status(200)
+        .send({ message: "trip successfully created", status: true });
+    } catch (err) {
+      console.log("err", err);
+      res.status(500).send({ message: "something went wrong", status: false });
+    }
   }
-});
+);
 
-router.put("/trips/:id", async function (req, res) {
-  const { tripName, to, from, seats, price } = req.body;
-  const { id } = req.params;
-  try {
-    const tripUpdated = await Trip.updateOne(
-      { _id: new ObjectId(id) },
-      { $set: { name: tripName, to, from, seats, price } }
-    );
+router.put(
+  "/trips/:id",
+  schemaValidate(schemas.tripPOST),
+  async function (req, res) {
+    const { tripName, to, from, seats, price } = req.body;
+    const { id } = req.params;
+    try {
+      const tripUpdated = await Trip.updateOne(
+        { _id: new ObjectId(id) },
+        { $set: { name: tripName, to, from, seats, price } }
+      );
 
-    res
-      .status(200)
-      .send({ message: "trip successfully updated", status: true });
-  } catch (err) {
-    console.log("err", err);
-    res.status(500).send({ message: "something went wrong", status: false });
+      res
+        .status(200)
+        .send({ message: "trip successfully updated", status: true });
+    } catch (err) {
+      console.log("err", err);
+      res.status(500).send({ message: "something went wrong", status: false });
+    }
   }
-});
+);
 
 router.delete("/trips/:id", async function (req, res) {
   const { id } = req.params;
@@ -62,7 +72,6 @@ router.get("/trips/:id", async function (req, res) {
       status: true,
     });
   } catch (err) {
-    console.log("err", err);
     res.status(500).send({ message: "something went wrong", status: false });
   }
 });
@@ -70,10 +79,24 @@ router.get("/trips/:id", async function (req, res) {
 router.get("/trips", async function (req, res) {
   const { city } = req.query;
   try {
-    const tripData = await Trip.find({ to: city });
-
+    if (city) {
+      const tripData = await Trip.aggregate([
+        {
+          $project: {
+            to: 1,
+            isCity: { $eq: ["$to", city] },
+          },
+        },
+      ]);
+      return res.status(200).send({
+        message: "trip successfully fetched by city",
+        trip: tripData,
+        status: true,
+      });
+    }
+    const tripData = await Trip.find();
     res.status(200).send({
-      message: "trip successfully fetched by id",
+      message: "All trips successfully fetched",
       trip: tripData,
       status: true,
     });
@@ -85,8 +108,7 @@ router.get("/trips", async function (req, res) {
 
 router.get("/users", async function (req, res) {
   try {
-    const allUsers = await Trip.find({ role: "User" });
-
+    const allUsers = await User.find({ role: "User" });
     res.status(200).send({
       message: "all users fetched",
       users: allUsers,
@@ -99,13 +121,20 @@ router.get("/users", async function (req, res) {
 });
 
 router.get("/bookings", async function (req, res) {
-  const { filterValue } = req.query;
-
+  const { status } = req.query;
   try {
-    if (filterValue) {
-      const allBookingsByStatus = await Booking.find({ status: filterValue });
+    if (status) {
+      const allBookingsByStatus = await Booking.aggregate([
+        {
+          $project: {
+            status: 1,
+            tripName: 1,
+            isStatus: { $eq: ["$status", status] },
+          },
+        },
+      ]);
       return res.status(200).send({
-        message: "all users fetched",
+        message: "all bookings successfully fetched by status",
         booking: allBookingsByStatus,
         status: true,
       });
@@ -113,7 +142,7 @@ router.get("/bookings", async function (req, res) {
 
     const allBookingsByStatus = await Booking.find();
     return res.status(200).send({
-      message: "all users fetched",
+      message: "all bookings successfully fetched",
       booking: allBookingsByStatus,
       status: true,
     });
@@ -125,28 +154,17 @@ router.get("/bookings", async function (req, res) {
 
 router.put("/bookings/:id", async function (req, res) {
   const { id } = req.params;
-
-  const { status } = req.query;
-
+  const { status } = req.body;
   try {
-    if (filterValue) {
       const bookingUpdated = await Booking.updateOne(
         { _id: new ObjectId(id) },
         { $set: { status } }
       );
       return res.status(200).send({
-        message: "Booking updated",
-        booking: allBookingsByStatus,
+        message: "Booking updated successfully",
+        booking: bookingUpdated,
         status: true,
       });
-    }
-
-    const allBookingsByStatus = await Booking.find();
-    return res.status(200).send({
-      message: "all users fetched",
-      booking: allBookingsByStatus,
-      status: true,
-    });
   } catch (err) {
     console.log("err", err);
     res.status(500).send({ message: "something went wrong", status: false });
