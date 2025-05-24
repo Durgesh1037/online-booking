@@ -17,7 +17,6 @@ Remaining features will be introduce soon
 2. Many more.
 
 The backend application is running on port 9000 and can be accessed at http://localhost:9000.
-
 Checkout the public repo :- https://github.com/Durgesh1037/online-booking
 
 Instructions to run the application:
