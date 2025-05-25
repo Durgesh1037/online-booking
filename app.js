@@ -4,7 +4,7 @@ const path = require('path');
 const cookieParser = require('cookie-parser');
 const logger = require('morgan');
 const hbs=require('hbs');
-
+let helmet = require("helmet");
 const usersRouter = require('./routes/users');
 const adminRouter = require('./routes/admin');
 const bookingRouter = require('./routes/booking');
@@ -12,6 +12,7 @@ const dotenv=require("dotenv").config();
 
 
 const app = express();
+app.use(helmet.hidePoweredBy());
 
 
 
