@@ -1,40 +1,18 @@
-var createError = require('http-errors');
-var express = require('express');
-var path = require('path');
-var cookieParser = require('cookie-parser');
-var logger = require('morgan');
+const createError = require('http-errors');
+const express = require('express');
+const path = require('path');
+const cookieParser = require('cookie-parser');
+const logger = require('morgan');
 const hbs=require('hbs');
 
-var usersRouter = require('./routes/users');
-var adminRouter = require('./routes/admin');
-var bookingRouter = require('./routes/booking');
+const usersRouter = require('./routes/users');
+const adminRouter = require('./routes/admin');
+const bookingRouter = require('./routes/booking');
 const dotenv=require("dotenv").config();
 
-// const swaggerUI = require('swagger-ui-express');
 
+const app = express();
 
-// const swaggerJSDoc = require('swagger-jsdoc');
-
-// const swaggerDefinition = {
-// openapi: '3.0.0',
-// info: {
-// title: 'My API',
-// version: '1.0.0',
-// description: 'My API Description',
-// },
-// };
-
-// const options = {
-// swaggerDefinition,
-// apis: ['./routes/users.js'], // Path to the API routes in your Node.js application
-// };
-
-// const swaggerSpec = swaggerJSDoc(options);
-// const swaggerSpec = require(‘./swagger’);
-
-var app = express();
-
-// app.use('/api-docs', swaggerUI.serve, swaggerUI.setup(swaggerSpec));
 
 
 
